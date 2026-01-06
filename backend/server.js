@@ -8,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyC8868bXJD3kPrslmDx4EseNnxILIIpEQI";
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "ae13fddec5f04e5fa333f76fba98783606de9855b295d08ebc0a0b2e0914942c";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
 // CORS Configuration
 app.use(cors({
@@ -48,9 +49,10 @@ app.post('/api/recommendations', async (req, res) => {
         `;
 
         // 3. Call Gemini
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
         console.log("Calling Gemini URL:", geminiUrl);
+        console.log("Using Model:", GEMINI_MODEL);
         console.log("Using API Key (first 10):", GEMINI_API_KEY.substring(0, 10));
 
         const geminiRes = await fetch(geminiUrl, {
