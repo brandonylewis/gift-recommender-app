@@ -6,7 +6,7 @@ const redditService = require('./services/redditService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyC8868bXJD3kPrslmDx4EseNnxILIIpEQI";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "ae13fddec5f04e5fa333f76fba98783606de9855b295d08ebc0a0b2e0914942c";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
