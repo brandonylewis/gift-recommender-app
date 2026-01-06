@@ -156,18 +156,39 @@ app.post('/api/pricing', async (req, res) => {
                 const data = await response.json();
 
                 let prices = [];
-                let thumbnail = null;
+                let images = [];
+                let rating = 0;
+                let reviews = 0;
+                let delivery = null;
 
                 if (data.shopping_results && data.shopping_results.length > 0) {
-                    thumbnail = data.shopping_results[0].thumbnail;
+                    const first = data.shopping_results[0];
+
+                    // Extract rich details from the top result
+                    rating = first.rating;
+                    reviews = first.reviews;
+                    delivery = first.delivery;
+
+                    // Collect images from top 3 results to simulate a gallery
+                    images = data.shopping_results.slice(0, 3).map(r => r.thumbnail).filter(Boolean);
+
                     prices = data.shopping_results.map(p => ({
                         source: p.source,
                         price: p.price,
-                        link: p.link
+                        link: p.link,
+                        delivery: p.delivery // Capture specific shipping info per seller
                     }));
                 }
 
-                return { ...item, prices, thumbnail };
+                return {
+                    ...item,
+                    prices,
+                    thumbnail: images[0] || null, // Main image
+                    images, // Gallery
+                    rating,
+                    reviews,
+                    delivery
+                };
             } catch (e) {
                 return { ...item, prices: [], error: "Pricing failed" };
             }
