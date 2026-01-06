@@ -78,17 +78,22 @@
             return <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded ml-2">📍 {dist} mi</span>;
         };
 
-        const StoreLocator = ({ location }) => {
+        const StoreLocator = ({ location, retailers }) => {
             const mapRef = useRef(null);
 
             useEffect(() => {
                 if (!location || !mapRef.current || !window.google) return;
+
                 const map = new google.maps.Map(mapRef.current, {
                     center: location,
-                    zoom: 12,
-                    disableDefaultUI: true
+                    zoom: 11,
+                    disableDefaultUI: true,
+                    styles: [
+                        { "featureType": "poi", "elementType": "labels", "stylers": [{ "visibility": "off" }] }
+                    ]
                 });
 
+                // User Marker
                 new google.maps.Marker({
                     position: location,
                     map: map,
@@ -96,30 +101,44 @@
                     icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
                 });
 
-                // Find generic gift shops nearby
+                // Search for SPECIFIC retailers found in recommendations
                 const service = new google.maps.places.PlacesService(map);
-                service.nearbySearch({
-                    location: location,
-                    radius: 5000,
-                    type: ['department_store', 'shopping_mall']
-                }, (results, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        results.forEach(place => {
-                            new google.maps.Marker({
-                                position: place.geometry.location,
-                                map: map,
-                                title: place.name
-                            });
-                        });
-                    }
+                const uniqueRetailers = [...new Set(retailers)].slice(0, 5); // Limit to top 5 unique stores
+
+                if (uniqueRetailers.length === 0) {
+                    // Fallback if no specific retailers (e.g. online only)
+                    uniqueRetailers.push("Department Store", "Shopping Mall");
+                }
+
+                uniqueRetailers.forEach(storeName => {
+                    const request = {
+                        location: location,
+                        radius: '10000',
+                        query: storeName
+                    };
+                    service.textSearch(request, (results, status) => {
+                        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                            // Plot top 1 result per retailer to avoid clutter
+                            if (results[0]) {
+                                new google.maps.Marker({
+                                    position: results[0].geometry.location,
+                                    map: map,
+                                    title: storeName
+                                });
+                            }
+                        }
+                    });
                 });
 
-            }, [location]);
+            }, [location, retailers]);
 
             return (
                 <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100 mb-8">
-                    <h3 className="text-lg font-bold text-slate-800 mb-2">🎁 Local Shopping Map</h3>
-                    <div ref={mapRef} className="w-full h-48 rounded-lg bg-slate-200"></div>
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-lg font-bold text-slate-800">🎁 Availability Map</h3>
+                        <span className="text-xs text-slate-500">Showing specific stores nearby</span>
+                    </div>
+                    <div ref={mapRef} className="w-full h-56 rounded-lg bg-slate-200"></div>
                 </div>
             );
         };
@@ -196,12 +215,21 @@
                             </div>
                         )}
 
+                        {/* Clickable Image Overlay */}
+                        <a
+                            href={gift.prices && gift.prices[0] ? getAffiliateLink(gift.prices[0].link) : '#'}
+                            target="_blank"
+                            className="absolute inset-0 z-0 cursor-pointer"
+                            aria-label="View Product"
+                        ></a>
+
                         {userLoc && (
-                            <div className="absolute top-2 right-2">
+                            <div className="absolute top-2 right-2 z-10">
                                 <DistanceBadge retailer={gift.prices && gift.prices[0] ? gift.prices[0].source : gift.name} location={userLoc} />
                             </div>
                         )}
                     </div>
+
 
                     <div className="p-5 flex-1 flex flex-col">
                         <div className="flex justify-between items-start mb-2">
@@ -384,8 +412,8 @@
                                 <Spinner text={status} />
                             ) : (
                                 <div className="animate-fade-in-up">
-                                    {/* Store Locator Map at Top of Results */}
-                                    {userLoc && <StoreLocator location={userLoc} />}
+                                    {/* Store Locator Map at Top of Results - Pass all unique retailers */}
+                                    {userLoc && <StoreLocator location={userLoc} retailers={recs.flatMap(r => r.prices ? r.prices.map(p => p.source) : []).filter(Boolean)} />}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                         {recs.map((g, i) => <GiftCard key={i} gift={g} userLoc={userLoc} />)}
