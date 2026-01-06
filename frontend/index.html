@@ -110,6 +110,9 @@
                     uniqueRetailers.push("Department Store", "Shopping Mall");
                 }
 
+                // Shared InfoWindow
+                const infoWindow = new google.maps.InfoWindow();
+
                 uniqueRetailers.forEach(storeName => {
                     const request = {
                         location: location,
@@ -118,12 +121,29 @@
                     };
                     service.textSearch(request, (results, status) => {
                         if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                            // Plot top 1 result per retailer to avoid clutter
+                            // Plot top 1 result per retailer
                             if (results[0]) {
-                                new google.maps.Marker({
-                                    position: results[0].geometry.location,
+                                const place = results[0];
+                                const marker = new google.maps.Marker({
+                                    position: place.geometry.location,
                                     map: map,
                                     title: storeName
+                                });
+
+                                // Add Click Listener
+                                marker.addListener("click", () => {
+                                    infoWindow.setContent(`
+                                        <div style="padding: 8px;">
+                                            <h3 style="font-weight: bold; margin-bottom: 4px;">${place.name}</h3>
+                                            <p style="font-size: 12px; color: #666;">${place.formatted_address || ''}</p>
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${place.geometry.location.lat()},${place.geometry.location.lng()}" 
+                                               target="_blank" 
+                                               style="display: inline-block; margin-top: 8px; font-weight: bold; color: #4F46E5; text-decoration: none;">
+                                               Get Directions ➔
+                                            </a>
+                                        </div>
+                                    `);
+                                    infoWindow.open(map, marker);
                                 });
                             }
                         }
@@ -270,7 +290,10 @@
                                             <span className="text-xs font-medium opacity-90">{price.source}</span>
                                             {price.delivery && idx > 0 && <span className="text-[10px] opacity-75">🚚 {price.delivery}</span>}
                                         </div>
-                                        <span className="font-bold">{price.price}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold">{price.price}</span>
+                                            <span className="text-[10px] bg-indigo-600 text-white px-2 py-1 rounded-full uppercase tracking-wider font-bold">Buy</span>
+                                        </div>
                                     </a>
                                 ))
                             ) : (
