@@ -57,6 +57,14 @@ app.post('/api/recommendations', async (req, res) => {
         });
 
         const geminiData = await geminiRes.json();
+
+        // Debug Logging
+        console.log("Gemini API Status:", geminiRes.status);
+        if (!geminiData.candidates || !geminiData.candidates.length) {
+            console.error("Gemini API Error - Full Response:", JSON.stringify(geminiData, null, 2));
+            throw new Error(`Gemini API returned no candidates. Status: ${geminiRes.status}`);
+        }
+
         const text = geminiData.candidates[0].content.parts[0].text;
         const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
         const recommendations = JSON.parse(jsonStr);
