@@ -92,8 +92,28 @@ app.post('/api/recommendations', async (req, res) => {
         }
 
         if (!success || !geminiData) {
-            console.error("All Gemini models failed.");
-            throw new Error(`All Gemini models failed. Last error: ${lastError}`);
+            console.error("All Gemini models failed. Switching to EMERGENCY MOCK mode.");
+
+            // EMERGENCY FALLBACK: Generate recommendations from Reddit context
+            const mockRecs = redditThreads.map((thread, i) => ({
+                name: `Trending: ${thread.trending_keywords[0] || 'Gift Idea'}`,
+                description: `Popular community suggestion from r/${thread.subreddit}. Context: ${thread.title}`,
+                category: "Community Favorite",
+                search_term: `${thread.trending_keywords[0]} gift`
+            })).slice(0, 8);
+
+            // Ensure we have at least one item
+            if (mockRecs.length === 0) {
+                mockRecs.push({
+                    name: "Universal Gift Card",
+                    description: "A versatile gift suitable for any occasion.",
+                    category: "Gift Card",
+                    search_term: "Visa Gift Card"
+                });
+            }
+
+            // Return mock response with a flag
+            return res.json({ recommendations: mockRecs, context: redditThreads, isFallback: true });
         }
 
         const text = geminiData.candidates[0].content.parts[0].text;
@@ -103,7 +123,16 @@ app.post('/api/recommendations', async (req, res) => {
         res.json({ recommendations, context: redditThreads });
     } catch (error) {
         console.error("Rec Error:", error);
-        res.status(500).json({ error: "Failed to generate recommendations" });
+        // Even the catch block should return something safe
+        res.status(200).json({
+            recommendations: [{
+                name: "Amazon Top Seller",
+                description: "This system is currently under heavy load. Here is a reliable option.",
+                category: "Best Seller",
+                search_term: "Best selling gift"
+            }],
+            error: "Failed to generate AI recommendations, showing defaults."
+        });
     }
 });
 
