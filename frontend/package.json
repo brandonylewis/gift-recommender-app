@@ -1,5 +1,6 @@
 {
-    "name": "gift-app-frontend",
+    "_comment": "Updated for Vercel deployment",
+    "name": "gift-recommender-frontend",
     "version": "1.0.0",
     "engines": {
         "node": "24.x"
