@@ -49,7 +49,14 @@ app.post('/api/recommendations', async (req, res) => {
         `;
 
         // 3. Call Gemini with Fallback Logic
-        const modelsToTry = [GEMINI_MODEL, "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
+        // Prioritize Flash models which usually have higher quotas
+        const modelsToTry = [
+            GEMINI_MODEL,
+            "gemini-2.5-flash",
+            "gemini-2.0-flash-001",
+            "gemini-flash-latest",
+            "gemini-pro-latest"
+        ];
         const uniqueModels = [...new Set(modelsToTry)]; // Deduplicate
 
         let geminiData = null;
