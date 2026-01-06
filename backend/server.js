@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const redditService = require('./services/redditService');
@@ -39,7 +38,7 @@ app.post('/api/recommendations', async (req, res) => {
         Recipient: ${age} year old ${gender}, ${relationship}
         Interests: ${interests.join(', ')}
         Occasion: ${occasion}
-        Budget: $${budgetMin}-$${budgetMax}
+        Budget: ${budgetMin}-${budgetMax}
         
         Market Context (from Reddit): ${JSON.stringify(redditThreads.map(t => t.trending_keywords))}
         
@@ -49,7 +48,7 @@ app.post('/api/recommendations', async (req, res) => {
         `;
 
         // 3. Call Gemini
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
         console.log("Calling Gemini URL:", geminiUrl);
         console.log("Using API Key (first 10):", GEMINI_API_KEY.substring(0, 10));
