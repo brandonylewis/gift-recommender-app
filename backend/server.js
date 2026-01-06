@@ -48,26 +48,45 @@ app.post('/api/recommendations', async (req, res) => {
         [{"name": "Product Name", "description": "Why it fits", "category": "Category", "search_term": "Search Query"}]
         `;
 
-        // 3. Call Gemini
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        // 3. Call Gemini with Fallback Logic
+        const modelsToTry = [GEMINI_MODEL, "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
+        const uniqueModels = [...new Set(modelsToTry)]; // Deduplicate
 
-        console.log("Calling Gemini URL:", geminiUrl);
-        console.log("Using Model:", GEMINI_MODEL);
-        console.log("Using API Key (first 10):", GEMINI_API_KEY.substring(0, 10));
+        let geminiData = null;
+        let success = false;
+        let lastError = null;
 
-        const geminiRes = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
+        for (const model of uniqueModels) {
+            try {
+                console.log(`Trying Gemini Model: ${model}`);
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
-        const geminiData = await geminiRes.json();
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
 
-        // Debug Logging
-        console.log("Gemini API Status:", geminiRes.status);
-        if (!geminiData.candidates || !geminiData.candidates.length) {
-            console.error("Gemini API Error - Full Response:", JSON.stringify(geminiData, null, 2));
-            throw new Error(`Gemini API returned no candidates. Status: ${geminiRes.status}`);
+                if (res.status === 200) {
+                    geminiData = await res.json();
+                    if (geminiData.candidates && geminiData.candidates.length) {
+                        success = true;
+                        console.log(`SUCCESS with model: ${model}`);
+                        break;
+                    }
+                } else {
+                    console.warn(`Model ${model} failed with status ${res.status}`);
+                    // If 403/429/404/5xx, continue to next model
+                }
+            } catch (e) {
+                console.warn(`Model ${model} threw exception:`, e);
+                lastError = e;
+            }
+        }
+
+        if (!success || !geminiData) {
+            console.error("All Gemini models failed.");
+            throw new Error(`All Gemini models failed. Last error: ${lastError}`);
         }
 
         const text = geminiData.candidates[0].content.parts[0].text;
