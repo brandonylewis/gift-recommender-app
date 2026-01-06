@@ -1,0 +1,26 @@
+{
+    "name": "gift-recommender-app",
+    "version": "1.0.0",
+    "description": "Full-stack gift recommendation app with AI and Real-time pricing",
+    "main": "backend/server.js",
+    "scripts": {
+        "start": "node backend/server.js",
+        "dev": "node backend/server.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "gift",
+        "ai",
+        "react",
+        "express"
+    ],
+    "author": "GiftAI Team",
+    "license": "ISC",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.18.2"
+    },
+    "engines": {
+        "node": "18.x"
+    }
+}
