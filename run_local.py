@@ -12,7 +12,7 @@ PORT = 3001
 GEMINI_API_KEY = "AIzaSyC8868bXJD3kPrslmDx4EseNnxILIIpEQI"
 SERPAPI_KEY = "ae13fddec5f04e5fa333f76fba98783606de9855b295d08ebc0a0b2e0914942c"
 
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 SERP_URL = "https://serpapi.com/search.json"
 
 # --- MOCK REDDIT DATA ---
