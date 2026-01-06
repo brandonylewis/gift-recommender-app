@@ -49,7 +49,11 @@ app.post('/api/recommendations', async (req, res) => {
         `;
 
         // 3. Call Gemini
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-002:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+        console.log("Calling Gemini URL:", geminiUrl);
+        console.log("Using API Key (first 10):", GEMINI_API_KEY.substring(0, 10));
+
         const geminiRes = await fetch(geminiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
